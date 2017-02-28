@@ -74,15 +74,6 @@ target_link_libraries(librevault-daemon boost)
 ## Qt5
 target_link_libraries(librevault-daemon Qt5::WebSockets)
 
-## Protobuf
-file(GLOB_RECURSE PROTO_LIST "*.proto")
-protobuf_generate_cpp(PROTO_SOURCES PROTO_HEADERS ${PROTO_LIST})
-
-add_library(librevault-protobuf STATIC ${PROTO_SOURCES} ${PROTO_HEADERS})
-target_link_libraries(librevault-protobuf PUBLIC protobuf)
-
-target_link_libraries(librevault-daemon librevault-protobuf)
-
 ## CryptoPP
 target_link_libraries(librevault-daemon cryptopp)
 

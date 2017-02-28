@@ -30,7 +30,6 @@
 #include "MulticastProvider.h"
 #include "control/Config.h"
 #include "folder/FolderGroup.h"
-#include <MulticastDiscovery.pb.h>
 #include <QLoggingCategory>
 
 Q_DECLARE_LOGGING_CATEGORY(log_multicast)
@@ -55,21 +54,12 @@ void MulticastGroup::setEnabled(bool enabled) {
 
 QByteArray MulticastGroup::get_message() {
 	if(message_.isEmpty()) {
-		protocol::MulticastDiscovery message;
+		QJsonObject message;
+		message["port"] = (int)Config::get()->getGlobal("p2p_listen").toUInt();
+		message["folderid"] = QString::fromLatin1(fgroup_->folderid().toHex());
+		message["peerid"] = QString::fromLatin1(provider_->getDigest().toBase64());
 
-		// Port
-		message.set_port(Config::get()->getGlobal("p2p_listen").toUInt());
-
-		// FolderID
-		QByteArray folderid = fgroup_->folderid();
-		message.set_folderid(folderid.data(), folderid.size());
-
-		// PeerID
-		QByteArray digest = provider_->getDigest();
-		message.set_digest(digest.data(), digest.size());
-
-		message_.resize(message.ByteSize());
-		message.SerializeToArray(message_.data(), message_.size());
+		message_ = QJsonDocument(message).toJson(QJsonDocument::Compact);
 	}
 	return message_;
 }

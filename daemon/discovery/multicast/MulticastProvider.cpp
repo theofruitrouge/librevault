@@ -29,7 +29,8 @@
 #include "MulticastProvider.h"
 #include "MulticastGroup.h"
 #include "nodekey/NodeKey.h"
-#include <MulticastDiscovery.pb.h>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QLoggingCategory>
 
 Q_LOGGING_CATEGORY(log_multicast, "discovery.multicast")
@@ -88,21 +89,21 @@ void MulticastProvider::processDatagram() {
 	qint64 datagram_size = socket->readDatagram(datagram_buffer, buffer_size_, &address, &port);
 	Q_ASSERT(datagram_size >= 0);
 
-	// Protobuf parsing
-	protocol::MulticastDiscovery message;
-	if(message.ParseFromArray(datagram_buffer, datagram_size)) {
+	// JSON parsing
+	QJsonDocument message = QJsonDocument::fromJson(QByteArray(datagram_buffer, datagram_size));
+	if(message.isObject() && message.object().contains("port") && message.object().contains("folderid") && message.object().contains("peerid")) {
 		DiscoveryResult result;
 		result.source = QStringLiteral("Multicast");
 		result.address = address;
-		result.port = message.port();
-		result.digest = QByteArray(message.digest().data(), message.digest().size());
+		result.port = message.object()["port"].toInt();
+		result.digest = QByteArray::fromHex(message.object()["peerid"].toString().toLatin1());
 
-		QByteArray folderid = QByteArray(message.folderid().data(), message.folderid().size());
-		qCDebug(log_multicast) << "<=== Multicast message received from: " << address << ":" << port;
+		QByteArray folderid = QByteArray::fromBase64(message.object()["folderid"].toString().toLatin1());
+		qCDebug(log_multicast) << "<=== Multicast message received from:" << address << ":" << port;
 
 		emit discovered(folderid, result);
 	}else{
-		qCDebug(log_multicast) << "<=X= Malformed multicast message from: " << address << ":" << port;
+		qCDebug(log_multicast) << "<=X= Malformed multicast message from:" << address << ":" << port;
 	}
 }
 
