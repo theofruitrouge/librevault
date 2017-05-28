@@ -14,9 +14,6 @@ set(CMAKE_AUTORCC ON)
 
 file(GLOB_RECURSE meta_SOURCES "*.cpp")
 file(GLOB_RECURSE meta_HEADERS "*.h")
-file(GLOB_RECURSE PROTO_LIST "*.proto")
-protobuf_generate_cpp(PROTO_SOURCES PROTO_HEADERS ${PROTO_LIST})
-list(APPEND meta_SOURCES ${PROTO_SOURCES})
 
 #============================================================================
 # Compile targets
@@ -32,6 +29,6 @@ target_include_directories(meta PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(meta PRIVATE librevault-common)
 target_link_libraries(meta PRIVATE aes)
 target_link_libraries(meta PRIVATE secret)
-target_link_libraries(meta PUBLIC protobuf)
+target_link_libraries(meta PUBLIC protocol-protobuf)
 target_link_libraries(meta PRIVATE Qt5::Core)
 target_link_libraries(meta PRIVATE cryptopp)
