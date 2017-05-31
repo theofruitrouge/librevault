@@ -35,7 +35,6 @@
 #include <QObject>
 #include <QTimer>
 #include <QSet>
-#include <set>
 #include <QHostAddress>
 #include <QLoggingCategory>
 
@@ -46,7 +45,6 @@ Q_DECLARE_LOGGING_CATEGORY(log_folder);
 class Peer;
 
 class IgnoreList;
-class StateCollector;
 
 class ChunkStorage;
 class MetaStorage;
@@ -62,7 +60,7 @@ class FolderGroup : public QObject {
 	Q_OBJECT
 
 public:
-	FolderGroup(FolderParams params, PeerPool* pool, StateCollector* state_collector, QObject* parent);
+	FolderGroup(FolderParams params, PeerPool* pool, QObject* parent);
 	virtual ~FolderGroup();
 
 	/* Getters */
@@ -71,7 +69,6 @@ public:
 private:
 	const FolderParams params_;
 	PeerPool* pool_;
-	StateCollector* state_collector_;
 
 	std::unique_ptr<IgnoreList> ignore_list;
 

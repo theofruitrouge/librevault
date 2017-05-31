@@ -3,7 +3,7 @@ project(librevault)
 
 if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
 	include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-	conan_basic_setup()
+	conan_basic_setup(TARGETS)
 endif()
 
 #============================================================================
@@ -28,10 +28,8 @@ option(BUILD_STATIC "Build static version of executable" OFF)
 option(BUILD_UPDATER "Add auto-updater support" ON)
 option(USE_BUNDLED_SQLITE3 "Force using bundled version of SQLite3" OFF)
 option(USE_BUNDLED_MINIUPNP "Force using bundled version of miniupnp" OFF)
-option(DEBUG_NORMALIZATION "Debug path normalization" OFF)
-option(DEBUG_WEBSOCKETPP "Debug websocket++" OFF)
 option(DEBUG_QT "Enable qDebug" OFF)
-set(SANITIZE "false" CACHE STRING "What sanitizer to use. false for nothing")
+set(SANITIZE "none" CACHE STRING "What sanitizer to use. false for nothing")
 option(INSTALL_BUNDLE "Prepare a bundle with all dependencies" OFF)
 
 #============================================================================
@@ -59,7 +57,7 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 # Sanitizer builds
-if(NOT SANITIZE STREQUAL "false")
+if(NOT SANITIZE STREQUAL "none")
 	set(CMAKE_CXX_FLAGS "-fsanitize=${SANITIZE} ${CMAKE_CXX_FLAGS}")
 	set(CMAKE_C_FLAGS "-fsanitize=${SANITIZE} ${CMAKE_C_FLAGS}")
 	set(CMAKE_EXE_LINKER_FLAGS "-fsanitize=${SANITIZE} ${CMAKE_EXE_LINKER_FLAGS}")
@@ -76,7 +74,7 @@ if(BUILD_STATIC)
 endif()
 
 if(OS_WIN)
-	add_definitions(-D_WIN32_WINNT=0x600)
+	add_definitions(-D_WIN32_WINNT=0x0601)
 	add_definitions(-DUNICODE)
 	add_definitions(-DWIN32_LEAN_AND_MEAN)
 endif()
@@ -85,14 +83,6 @@ if(OS_MAC)
 	add_definitions(-D__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=0)
 	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -fobjc-arc")
 	set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -fobjc-arc")
-endif()
-
-if(DEBUG_NORMALIZATION)
-	add_definitions(-DLV_DEBUG_NORMALIZATION)
-endif()
-
-if(DEBUG_WEBSOCKETPP)
-	add_definitions(-DLV_DEBUG_WEBSOCKETPP)
 endif()
 
 if(NOT DEBUG_QT)
@@ -152,10 +142,7 @@ add_library(dir_monitor INTERFACE)
 target_include_directories(dir_monitor INTERFACE contrib/dir_monitor/include)
 
 ## Docopt
-find_package(docopt QUIET)
-if(NOT docopt_FOUND)
-	add_subdirectory(contrib/docopt)
-endif()
+find_package(docopt)
 
 ## libnatpmp
 find_library(libnatpmp_LIBRARIES NAMES libnatpmp natpmp)
@@ -195,47 +182,11 @@ if(BUILD_GUI)
 	add_subdirectory("contrib/qtsingleapplication")
 endif()
 
-## Spdlog
-find_package(spdlog QUIET)
-add_definitions(-DSPDLOG_WCHAR_FILENAMES)
-if(spdlog_FOUND)
-	add_library(spdlog INTERFACE)
-	target_link_libraries(spdlog INTERFACE spdlog::spdlog)
-else()
-	add_subdirectory(contrib/spdlog)
-endif()
-
 ## SQLite
-if(NOT USE_BUNDLED_SQLITE3)
-	find_package(Sqlite3 3.9 QUIET)
-endif()
-
-if(SQLITE3_FOUND AND NOT USE_BUNDLED_SQLITE3)
-	message(STATUS "Using system SQLite ${SQLITE3_VERSION}")
-	add_library(sqlite3 INTERFACE)
-	target_include_directories(sqlite3 INTERFACE ${SQLITE3_INCLUDE_DIR})
-	target_link_libraries(sqlite3 INTERFACE ${SQLITE3_LIBRARY})
-
-	if(OS_LINUX)
-		target_link_libraries(sqlite3 INTERFACE dl)
-	endif()
-else()
-	message(STATUS "Using bundled SQLite")
-	add_library(sqlite3 STATIC contrib/sqlite3/sqlite3.c)
-	target_include_directories(sqlite3 PUBLIC "contrib/sqlite3")
-
-	if(OS_LINUX)
-		target_link_libraries(sqlite3 PUBLIC dl)
-	endif()
-endif()
-
-## WebSocket++
-find_package(websocketpp QUIET)
-add_library(websocketpp INTERFACE)
-if(NOT websocketpp_FOUND)
-	add_subdirectory("contrib/websocketpp")
-	target_include_directories(websocketpp INTERFACE "contrib/websocketpp")
-endif()
+find_package(Sqlite3 3.9 QUIET)
+add_library(sqlite3 INTERFACE)
+target_include_directories(sqlite3 INTERFACE ${SQLITE3_INCLUDE_DIR})
+target_link_libraries(sqlite3 INTERFACE ${SQLITE3_LIBRARY})
 
 ##### External libraries #####
 

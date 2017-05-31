@@ -28,15 +28,13 @@
  */
 #include "Index.h"
 #include "control/FolderParams.h"
-#include "control/StateCollector.h"
 #include "folder/meta/MetaStorage.h"
-#include "util/readable.h"
 #include "blob.h"
 #include <QFile>
 
 namespace librevault {
 
-Index::Index(const FolderParams& params, StateCollector* state_collector, QObject* parent) : QObject(parent), params_(params), state_collector_(state_collector) {
+Index::Index(const FolderParams& params, QObject* parent) : QObject(parent), params_(params) {
 	auto db_filepath = params_.system_path + "/librevault.db";
 
 	if(QFile::exists(db_filepath))
@@ -72,8 +70,6 @@ Index::Index(const FolderParams& params, StateCollector* state_collector, QObjec
 	hash_file.open(QIODevice::WriteOnly | QIODevice::Truncate);
 	hash_file.write(hexhash_conf);
 	hash_file.close();
-
-	notifyState();
 }
 
 bool Index::haveMeta(const Meta::PathRevision& path_revision) noexcept {
@@ -129,15 +125,13 @@ void Index::putMeta(const SignedMeta& signed_meta, bool fully_assembled) {
 	raii_transaction.commit();  // End transaction
 
 	if(fully_assembled)
-		LOGD("Added fully assembled Meta of " << path_id_readable(signed_meta.meta().pathId()) << " t:" << signed_meta.meta().meta_type());
+		LOGD("Added fully assembled Meta of " << signed_meta.meta().pathId().toHex() << " t:" << signed_meta.meta().meta_type());
 	else
-		LOGD("Added Meta of " << path_id_readable(signed_meta.meta().pathId()) << " t:" << signed_meta.meta().meta_type());
+		LOGD("Added Meta of " << signed_meta.meta().pathId().toHex() << " t:" << signed_meta.meta().meta_type());
 
 	emit metaAdded(signed_meta);
 	if(!fully_assembled)
 		emit metaAddedExternal(signed_meta);
-
-	notifyState();
 }
 
 QList<SignedMeta> Index::getMeta(const std::string& sql, const std::map<std::string, SQLValue>& values){
@@ -205,14 +199,6 @@ void Index::wipe() {
 	db_->exec("DELETE FROM openfs");
 	savepoint.commit();
 	db_->exec("VACUUM");
-}
-
-void Index::notifyState() {
-	QJsonObject entries;
-	for(auto row : db_->exec("SELECT type, COUNT(*) AS entries FROM meta GROUP BY type")) {
-		entries[QString::number(row[0].as_uint())] = (double)row[1].as_uint();
-	}
-	state_collector_->folder_state_set(params_.secret.getHash(), "index", entries);
 }
 
 } /* namespace librevault */

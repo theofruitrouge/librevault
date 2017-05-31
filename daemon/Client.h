@@ -38,12 +38,10 @@
 namespace librevault {
 
 /* Components */
-class ControlServer;
 class DiscoveryAdapter;
 class NodeKey;
 class PeerServer;
 class PortMapper;
-class StateCollector;
 
 class FolderGroup;
 class FolderParams;
@@ -63,13 +61,11 @@ public slots:
 	void shutdown();
 
 private:
-	StateCollector* state_collector_;
 	BandwidthCounter bc_all_, bc_blocks_;
 	NodeKey* node_key_;
 	PortMapper* portmanager_;
 	DiscoveryAdapter* discovery_;
 	PeerServer* peerserver_;
-	ControlServer* control_server_;
 
 	// Folders
 	QMap<QByteArray, FolderGroup*> groups_;

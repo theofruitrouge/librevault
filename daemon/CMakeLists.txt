@@ -64,11 +64,12 @@ target_link_libraries(librevault-daemon discovery)
 target_link_libraries(librevault-daemon pathnormalizer)
 target_link_libraries(librevault-daemon librevault-common)
 target_link_libraries(librevault-daemon dir_monitor)
-target_link_libraries(librevault-daemon spdlog)
 target_link_libraries(librevault-daemon docopt_s)
 target_link_libraries(librevault-daemon rabin)
 target_link_libraries(librevault-daemon sqlite3)
-target_link_libraries(librevault-daemon websocketpp)
+if(TARGET CONAN_PKG::spdlog)
+	target_link_libraries(librevault-daemon CONAN_PKG::spdlog)
+endif()
 
 ##### External libraries #####
 
@@ -82,7 +83,7 @@ target_link_libraries(librevault-daemon Qt5::WebSockets)
 target_link_libraries(librevault-daemon cryptopp)
 
 ## OpenSSL
-target_link_libraries(librevault-daemon OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(librevault-daemon OpenSSL::SSL)
 
 ##### System libraries #####
 
@@ -98,6 +99,6 @@ if(OS_MAC)
 	target_link_libraries(librevault-daemon "-framework CoreServices")
 endif()
 
-if(BUILD_STATIC AND OS_LINUX)
+if(OS_LINUX)
 	target_link_libraries(librevault-daemon dl)
 endif()

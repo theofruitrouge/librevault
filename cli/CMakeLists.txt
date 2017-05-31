@@ -29,9 +29,7 @@ add_executable(librevault-cli ${SRCS})
 # Third-party libraries
 #============================================================================
 
-target_link_libraries(librevault-cli librevault-common)
 target_link_libraries(librevault-cli secret)
-target_link_libraries(librevault-cli OpenSSL::SSL OpenSSL::Crypto)
 target_link_libraries(librevault-cli docopt_s)
 
 # Qt
