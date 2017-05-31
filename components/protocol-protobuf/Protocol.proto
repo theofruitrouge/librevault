@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Alexander Shishenko <alex@shishenko.com>
+/* Copyright (C) 2014-2017 Alexander Shishenko <alex@shishenko.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,10 +26,38 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  */
-#include "SnapshotReader.h"
+syntax = "proto3";
+package librevault.protocol;
 
-namespace librevault {
+message Handshake_ {
+	bytes auth_token = 1;
+	string device_name = 2;
+	string user_agent = 3;
+	uint32 dht_port = 4;    // Valid values 0-65535
+	repeated string extensions = 255;
+}
 
+message SnapshotUpdate {
+	bytes snapshot = 1;
+    bytes signature = 2;
+    repeated bytes inodes = 3;
+    repeated bytes bitfields = 4;
+}
 
+message BlockRequest_ {
+	bytes ct_hash = 1;
+	uint32 offset = 2;
+	uint32 length = 3;
+}
 
-} /* namespace librevault */
+message BlockResponse_ {
+	bytes ct_hash = 1;
+	uint32 offset = 2;
+	bytes content = 3;
+}
+
+message BlockCancel_ {
+	bytes ct_hash = 1;
+	uint32 offset = 2;
+	uint32 length = 3;
+}

@@ -28,12 +28,16 @@
  */
 syntax = "proto3";
 package librevault.serialization;
-import "EncryptedData.proto";
+
+message EncryptedData_ {
+	bytes ct = 1;
+	bytes iv = 2;
+}
 
 message Meta {
 	/* Required metadata */
 	bytes path_id = 1;
-	EncryptedData path = 2;	// AES-256-CBC encrypted normalized path relative to sync directory path.
+	EncryptedData_ path = 2;	// AES-256-CBC encrypted normalized path relative to sync directory path.
 	uint32 meta_type = 3;
 	int64 revision = 4;
 
@@ -49,7 +53,7 @@ message Meta {
 	}
 
 	message SymlinkMetadata {
-		EncryptedData symlink_path = 1;
+		EncryptedData_ symlink_path = 1;
 	}
 
 	message FileMetadata {
@@ -68,7 +72,7 @@ message Meta {
 			uint32 polynomial_shift = 3;
 			uint32 avg_bits = 4;
 		}
-		EncryptedData rabin_global_params = 5;
+		EncryptedData_ rabin_global_params = 5;
 
 		message Chunk {
 			bytes ct_hash = 1;

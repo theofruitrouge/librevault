@@ -28,7 +28,7 @@
  */
 #include "EncryptedData.h"
 #include <AES_CBC.h>
-#include <EncryptedData.pb.h>
+#include <Snapshot.pb.h>
 #include <cryptopp/osrng.h>
 
 namespace librevault {

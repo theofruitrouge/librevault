@@ -28,20 +28,60 @@
  */
 syntax = "proto3";
 package librevault.serialization;
-import "EncryptedData.proto";
+import "google/protobuf/timestamp.proto";
 
-message Snapshot {
-	message SnapshotEntry {         // "Child" in snapshot tree
-		EncryptedData path = 1;     // Normalized path
-		int64 timestamp = 2;        // Inode modification timestamp
-	    uint32 inode_type = 3;      // Inode type (extensible)
-		bytes inode_hash = 4;       // Inode hash
-	}
-	int64 timestamp = 1;            // Snapshot modification timestamp
-	repeated SnapshotEntry entries = 255;
+message EncryptedData {
+	bytes ct = 1;
+	bytes iv = 2;
 }
 
-message SignedSnapshot {
-	bytes snapshot = 1;
-	bytes signature = 2;
+message Inode {
+	EncryptedData path = 1;
+	google.protobuf.Timestamp timestamp = 2;
+
+    enum InodeType {
+	    DELETED = 0;
+        FILE = 1;
+        DIRECTORY = 2;
+        SYMLINK = 3;
+	}
+	InodeType type = 3;
+
+	google.protobuf.Timestamp mtime = 4;
+
+	// Windows-specific
+	uint32 windows_attrib = 5;
+	// Unix-specific
+	uint32 mode = 6;
+	uint32 uid = 7;
+	uint32 gid = 8;
+
+	/* File-specific */
+	message Chunk {
+		bytes ct_hash = 1;
+		uint32 size = 2;
+		bytes iv = 3;
+
+		bytes pt_hmac = 4;
+	}
+	repeated Chunk chunks = 255;
+
+	/* Symlink-specific */
+	EncryptedData symlink_target = 13;
+}
+
+message Snapshot {
+	int64 timestamp = 1;            // Snapshot modification timestamp
+	repeated bytes inode_hash = 2;
+
+    // Global chunking parameters
+	// Uni-algorithm parameters
+	uint32 max_chunksize = 3;
+	uint32 min_chunksize = 4;
+
+	// Rabin chunking algorithm parameters
+	uint64 polynomial = 5;
+	uint32 polynomial_degree = 6;
+	uint32 polynomial_shift = 7;
+	uint32 avg_bits = 8;
 }
