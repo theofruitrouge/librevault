@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Alexander Shishenko <alex@shishenko.com>
+/* Copyright (C) 2015 Alexander Shishenko <alex@shishenko.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,10 +26,25 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  */
-syntax = "proto3";
-package librevault.serialization;
+#include <PathNormalizer.h>
+#include <Secret.h>
+#include <QDir>
+#include <QDirIterator>
+#include <QDebug>
 
-message EncryptedData {
-	bytes ct = 1;
-	bytes iv = 2;
+void scanFile(QString abspath) {
+
+}
+
+int main() {
+	librevault::Secret secret;
+	qDebug() << secret;
+	QString root = "/home/gamepad/Experiment";
+	QDirIterator it(root, QDir::AllEntries | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+	while(it.hasNext()) {
+		it.next();
+		qDebug() << it.filePath() << librevault::PathNormalizer::normalizePath(it.filePath(), root);
+		// Determine type
+	}
+	return 0;
 }

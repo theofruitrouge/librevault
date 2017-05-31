@@ -27,12 +27,12 @@
  * files in the program, then also delete it here.
  */
 syntax = "proto3";
-import "EncryptedData.proto";
-import "InodeMetadataGeneric.proto";
 package librevault.serialization;
+import "EncryptedData.proto";
+import "InodeGeneric.proto";
 
-message Inode {
-	GenericMetadata generic_metadata = 1;
+message InodeFile {
+	InodeGeneric generic = 1;
 
 	// Algorithm selection
 	uint32 algorithm_type = 2;
@@ -42,14 +42,14 @@ message Inode {
 	uint32 max_chunksize = 4;
 	uint32 min_chunksize = 5;
 
-	// Rabin algorithm parameters
-	message RabinGlobalParams {
+	// Rabin chunking algorithm parameters
+	message RabinParams {
 		uint64 polynomial = 1;
 		uint32 polynomial_degree = 2;
 		uint32 polynomial_shift = 3;
 		uint32 avg_bits = 4;
 	}
-	EncryptedData rabin_global_params = 6;
+	EncryptedData rabin_params = 6;
 
 	message Chunk {
 		bytes ct_hash = 1;

@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Alexander Shishenko <alex@shishenko.com>
+/* Copyright (C) 2017 Alexander Shishenko <alex@shishenko.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,10 +26,31 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  */
-syntax = "proto3";
-package librevault.serialization;
+#pragma once
+#include <Secret.h>
+#include <QByteArray>
 
-message EncryptedData {
-	bytes ct = 1;
-	bytes iv = 2;
+namespace librevault {
+
+namespace serialization {
+class EncryptedData;
 }
+
+class EncryptedData {
+public:
+	EncryptedData() = default;
+	EncryptedData(const serialization::EncryptedData& serialized);
+	operator serialization::EncryptedData() const;
+
+	void setPlainText(Secret secret, QByteArray pt, QByteArray iv = QByteArray());
+	QByteArray getPlainText(Secret secret) const;
+
+	void setCipherText(QByteArray ct, QByteArray iv) {ct_ = ct; iv_ = iv;};
+	QByteArray getCipherText() const {return ct_;};
+	QByteArray getIV() const {return iv_;};
+
+private:
+	QByteArray ct_, iv_;
+};
+
+} /* namespace librevault */

@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Alexander Shishenko <alex@shishenko.com>
+/* Copyright (C) 2017 Alexander Shishenko <alex@shishenko.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,10 +26,46 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  */
-syntax = "proto3";
-package librevault.serialization;
+#pragma once
+#include <QBitArray>
+#include <QByteArray>
+#include <QMap>
+#include <Secret.h>
+#include <Snapshot.h>
+#include "IChunkStorage.h"
+#include "IInodeStorage.h"
 
-message EncryptedData {
-	bytes ct = 1;
-	bytes iv = 2;
-}
+namespace librevault {
+
+class SnapshotEditorEntry {
+public:
+	bool inodePresent() const;
+	quint32 inodeType() const;
+	QByteArray inode() const;
+	QBitArray blockPresence() const;
+
+	quint16 timestamp();
+
+	// Meaningful for files
+	quint64 filesize(); // Loop-count
+	QList<QByteArray> blockList() const;
+
+private:
+	Snapshot& snapshot_;
+};
+
+class SnapshotEditor {
+public:
+	SnapshotEditor(Snapshot snapshot, Secret secret, IInodeStorage* inodest, IChunkStorage* chunkst);
+
+	SnapshotEditorEntry getEntryByInodeHash(QByteArray inode_hash);
+	SnapshotEditorEntry getEntryByPath(QByteArray normpath);
+
+private:
+	Secret secret_;
+	Snapshot snapshot_;
+
+	QMap<QByteArray, SnapshotEditorEntry> all_snapshots;
+};
+
+} /* namespace librevault */

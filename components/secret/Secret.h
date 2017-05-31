@@ -78,6 +78,10 @@ public:
 
 	QByteArray getHash() const;
 
+	// Capabilities
+	inline bool canEncryptData() const {return getType() < Download;}
+
+	// Comparators
 	bool operator== (const Secret& key) const {return secret_s == key.secret_s;}
 	bool operator< (const Secret& key) const {return secret_s < key.secret_s;}
 

@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Alexander Shishenko <alex@shishenko.com>
+/* Copyright (C) 2017 Alexander Shishenko <alex@shishenko.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,10 +26,10 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  */
-syntax = "proto3";
+#include "SnapshotReader.h"
 
-/* Algorithm-independent hash */
-message StrongHash {
-	uint32 type = 1;
-	bytes hash = 2;
-}
+namespace librevault {
+
+
+
+} /* namespace librevault */

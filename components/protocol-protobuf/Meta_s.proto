@@ -27,8 +27,8 @@
  * files in the program, then also delete it here.
  */
 syntax = "proto3";
-import "EncryptedData.proto";
 package librevault.serialization;
+import "EncryptedData.proto";
 
 message Meta {
 	/* Required metadata */

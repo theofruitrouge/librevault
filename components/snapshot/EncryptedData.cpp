@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Alexander Shishenko <alex@shishenko.com>
+/* Copyright (C) 2017 Alexander Shishenko <alex@shishenko.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,10 +26,38 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  */
-syntax = "proto3";
-package librevault.serialization;
+#include "EncryptedData.h"
+#include <AES_CBC.h>
+#include <EncryptedData.pb.h>
+#include <cryptopp/osrng.h>
 
-message EncryptedData {
-	bytes ct = 1;
-	bytes iv = 2;
+namespace librevault {
+
+EncryptedData::EncryptedData(const serialization::EncryptedData& serialized) :
+	ct_(QByteArray::fromStdString(serialized.ct())),
+	iv_(QByteArray::fromStdString(serialized.iv())) {}
+
+EncryptedData::operator serialization::EncryptedData() const {
+	serialization::EncryptedData pb;
+	pb.set_ct(ct_.toStdString());
+	pb.set_iv(iv_.toStdString());
+	return pb;
 }
+
+void EncryptedData::setPlainText(Secret secret, QByteArray pt, QByteArray iv) {
+	Q_ASSERT(secret.canEncryptData());
+	if(iv.isEmpty()) {
+		iv.resize(16);
+		CryptoPP::AutoSeededRandomPool().GenerateBlock((uchar*)iv.data(), 16);
+	}
+
+	iv_ = iv;
+	ct_ = encryptAesCbc(pt, secret.getEncryptionKey(), iv_);
+}
+
+QByteArray EncryptedData::getPlainText(Secret secret) const {
+	Q_ASSERT(secret.canEncryptData());
+	return decryptAesCbc(ct_, secret.getEncryptionKey(), iv_);
+}
+
+} /* namespace librevault */

@@ -28,8 +28,14 @@
  */
 syntax = "proto3";
 package librevault.serialization;
+import "EncryptedData.proto";
 
-message EncryptedData {
-	bytes ct = 1;
-	bytes iv = 2;
+message InodeGeneric {	// Approximation of filesystem attributes (may be extended to ACLs)
+    int64 mtime = 1;
+    // Windows-specific
+    uint32 windows_attrib = 2;
+    // Unix-specific
+    uint32 mode = 3;
+    uint32 uid = 4;
+    uint32 gid = 5;
 }

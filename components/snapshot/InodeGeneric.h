@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Alexander Shishenko <alex@shishenko.com>
+/* Copyright (C) 2017 Alexander Shishenko <alex@shishenko.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,10 +26,53 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  */
-syntax = "proto3";
-package librevault.serialization;
+#pragma once
+#include "EncryptedData.h"
+#include <Secret.h>
+#include <QByteArray>
+#include <QSharedData>
+#include <QString>
+#include <QList>
+#include <chrono>
 
-message EncryptedData {
-	bytes ct = 1;
-	bytes iv = 2;
+namespace librevault {
+
+namespace serialization {
+class InodeGeneric;
 }
+
+/* SnapshotEntry */
+struct InodeGenericData : public QSharedData {
+	std::chrono::nanoseconds mtime_ = std::chrono::nanoseconds(0);
+	quint32 windows_attrib_ = 0;
+	quint32 mode_ = 0;
+	quint32 uid_ = 0;
+	quint32 gid_ = 0;
+};
+
+class InodeGeneric {
+public:
+	InodeGeneric() {d_ = new InodeGenericData;}
+	InodeGeneric(const serialization::InodeGeneric& serialized);
+	operator serialization::InodeGeneric() const;
+
+	std::chrono::nanoseconds mtime() const {return d_->mtime_;}
+	void setMtime(std::chrono::nanoseconds path) {d_->mtime_ = path;}
+
+	quint32 windowsAttrib() const {return d_->windows_attrib_;}
+	void setWindowsAttrib(quint32 windows_attrib) {d_->windows_attrib_ = windows_attrib;}
+
+	quint32 mode() const {return d_->mode_;}
+	void setMode(quint32 mode) {d_->mode_ = mode;}
+
+	quint32 uid() const {return d_->uid_;}
+	void setUid(quint32 uid) {d_->uid_ = uid;}
+
+	quint32 gid() const {return d_->gid_;}
+	void setGid(quint32 gid) {d_->gid_ = gid;}
+
+private:
+	QSharedDataPointer<InodeGenericData> d_;
+};
+
+} /* namespace librevault */

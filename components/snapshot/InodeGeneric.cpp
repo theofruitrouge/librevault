@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Alexander Shishenko <alex@shishenko.com>
+/* Copyright (C) 2017 Alexander Shishenko <alex@shishenko.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,10 +26,28 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  */
-syntax = "proto3";
-package librevault.serialization;
+#include "InodeGeneric.h"
+#include <InodeGeneric.pb.h>
 
-message EncryptedData {
-	bytes ct = 1;
-	bytes iv = 2;
+namespace librevault {
+
+InodeGeneric::InodeGeneric(const serialization::InodeGeneric& serialized) {
+	d_->mtime_ = std::chrono::nanoseconds(serialized.mtime());
+	d_->windows_attrib_ = serialized.windows_attrib();
+	d_->mode_ = serialized.mode();
+	d_->uid_ = serialized.uid();
+	d_->gid_ = serialized.gid();
 }
+
+InodeGeneric::operator serialization::InodeGeneric() const {
+	serialization::InodeGeneric serialized;
+	serialized.set_mtime(d_->mtime_.count());
+	serialized.set_windows_attrib(d_->windows_attrib_);
+	serialized.set_mode(d_->mode_);
+	serialized.set_uid(d_->uid_);
+	serialized.set_gid(d_->gid_);
+
+	return serialized;
+}
+
+} /* namespace librevault */
