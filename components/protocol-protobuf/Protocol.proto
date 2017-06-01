@@ -55,9 +55,3 @@ message BlockResponse_ {
 	uint32 offset = 2;
 	bytes content = 3;
 }
-
-message BlockCancel_ {
-	bytes ct_hash = 1;
-	uint32 offset = 2;
-	uint32 length = 3;
-}
