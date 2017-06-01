@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2017 Alexander Shishenko <alex@shishenko.com>
+/* Copyright (C) 2017 Alexander Shishenko <alex@shishenko.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,63 +26,26 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  */
-syntax = "proto3";
-package librevault.serialization;
-import "google/protobuf/timestamp.proto";
+#include "ChunkInfo.h"
+#include <Snapshot.pb.h>
 
-message EncryptedData {
-	bytes ct = 1;
-	bytes iv = 2;
+namespace librevault {
+
+ChunkInfo::ChunkInfo(const serialization::Inode_ChunkInfo& serialized) {
+	d = new ChunkInfoData;
+	d->ct_hash = QByteArray::fromStdString(serialized.ct_hash());
+	d->size = serialized.size();
+	d->iv = QByteArray::fromStdString(serialized.iv());
+	d->pt_hmac = QByteArray::fromStdString(serialized.pt_hmac());
 }
 
-message Inode {
-	EncryptedData path = 1;
-	google.protobuf.Timestamp timestamp = 2;
-
-    enum InodeType {
-	    DELETED = 0;
-        FILE = 1;
-        DIRECTORY = 2;
-        SYMLINK = 3;
-	}
-	InodeType type = 3;
-
-	google.protobuf.Timestamp mtime = 4;
-    uint32 mtime_granularity = 5;    // (0 treated as 1). Should be 0 in "private mode", as it leaks the OS.
-
-	// Windows-specific
-	uint32 windows_attrib = 6;
-	// Unix-specific
-	uint32 mode = 7;
-	uint32 uid = 8;
-	uint32 gid = 9;
-
-	/* File-specific */
-	message ChunkInfo {
-		bytes ct_hash = 1;
-		uint32 size = 2;
-		bytes iv = 3;
-
-		bytes pt_hmac = 4;
-	}
-	repeated ChunkInfo chunks = 255;
-
-	/* Symlink-specific */
-	EncryptedData symlink_target = 10;
+ChunkInfo::operator serialization::Inode_ChunkInfo() const {
+	serialization::Inode_ChunkInfo serialized;
+	serialized.set_ct_hash(d->ct_hash.toStdString());
+	serialized.set_size(d->size);
+	serialized.set_iv(d->iv.toStdString());
+	serialized.set_pt_hmac(d->pt_hmac.toStdString());
+	return serialized;
 }
 
-message Snapshot {
-	int64 revision = 1;            // Any *comparable* value, that could be used to uniquely identify this snapshot
-	repeated bytes inode_hash = 2;
-
-    // Global chunking parameters
-	// Uni-algorithm parameters
-	uint32 max_chunksize = 3;
-	uint32 min_chunksize = 4;
-
-	// Rabin chunking algorithm parameters
-	uint64 polynomial = 5;
-	uint32 polynomial_degree = 6;
-	uint32 polynomial_shift = 7;
-	uint32 avg_bits = 8;
-}
+} /* namespace librevault */
