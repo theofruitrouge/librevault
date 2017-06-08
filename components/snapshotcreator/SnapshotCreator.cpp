@@ -1,4 +1,4 @@
-/* Copyright (C) 2015 Alexander Shishenko <alex@shishenko.com>
+/* Copyright (C) 2017 Alexander Shishenko <alex@shishenko.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,37 +26,21 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  */
-#include "InodeScanner.h"
-#include "Snapshot.h"
-#include "IInodeStorage.h"
+#include "SnapshotCreator.h"
 #include <PathNormalizer.h>
-#include <Secret.h>
-#include <QDir>
-#include <QDirIterator>
-#include <QDebug>
 
-void scanFile(QString abspath) {
+namespace librevault {
 
+SnapshotCreator::SnapshotCreator(Secret secret, QString root, IChunkStorage* chunk_storage, IInodeStorage* inode_storage, ISnapshotStorage* snapshot_storage) :
+	secret_(secret), root_(root), chunk_storage_(chunk_storage), inode_storage_(inode_storage), snapshot_storage_(snapshot_storage) {
 
 }
 
-int main() {
-	librevault::Secret secret;
-	qDebug() << secret;
-	QString root = "/home/gamepad/Experiment";
+Inode SnapshotCreator::createInode(QString path) {
+	Inode new_inode;
+	new_inode.setPath(EncryptedData(secret_, PathNormalizer::normalizePath(path, root_)));
 
-	librevault::Snapshot snapshot;
-
-	QDirIterator it(root, QDir::AllEntries | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
-	while(it.hasNext()) {
-		it.next();
-		qDebug() << it.filePath() << librevault::PathNormalizer::normalizePath(it.filePath(), root);
-
-		librevault::NullInodeStorage null_inode_storage;
-		librevault::InodeScanner scanner(it.filePath(), secret, root, snapshot, &null_inode_storage);
-		librevault::Inode inode = scanner.createInode();
-		qDebug() << inode.chunks().size();
-	}
-
-	return 0;
+	//new_inode.setSymlinkTarget(EncryptedData(secret_, PathNormalizer::))
 }
+
+} /* namespace librevault */

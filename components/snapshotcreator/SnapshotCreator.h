@@ -1,4 +1,4 @@
-/* Copyright (C) 2015 Alexander Shishenko <alex@shishenko.com>
+/* Copyright (C) 2017 Alexander Shishenko <alex@shishenko.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,37 +26,36 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  */
-#include "InodeScanner.h"
-#include "Snapshot.h"
+#pragma once
+#include "EncryptedData.h"
+#include "IChunkStorage.h"
 #include "IInodeStorage.h"
-#include <PathNormalizer.h>
+#include "ISnapshotStorage.h"
+#include <Inode.h>
+#include <Snapshot.h>
 #include <Secret.h>
-#include <QDir>
-#include <QDirIterator>
-#include <QDebug>
+#include <QByteArray>
+#include <QList>
+#include <QSharedData>
 
-void scanFile(QString abspath) {
+namespace librevault {
 
+class SnapshotCreator {
+public:
+	SnapshotCreator(Secret secret, QString root, IChunkStorage* chunk_storage, IInodeStorage* inode_storage, ISnapshotStorage* snapshot_storage);
+	~SnapshotCreator();
 
-}
+	Snapshot createSnapshot(QString root);
+	Snapshot updateSnapshot(Snapshot old_snapshot, QString root, QList<QByteArray> normalized_update_triggers);
 
-int main() {
-	librevault::Secret secret;
-	qDebug() << secret;
-	QString root = "/home/gamepad/Experiment";
+private:
+	QString root_;
+	Secret secret_;
+	IChunkStorage* chunk_storage_;
+	IInodeStorage* inode_storage_;
+	ISnapshotStorage* snapshot_storage_;
 
-	librevault::Snapshot snapshot;
+	Inode createInode(QString path);
+};
 
-	QDirIterator it(root, QDir::AllEntries | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
-	while(it.hasNext()) {
-		it.next();
-		qDebug() << it.filePath() << librevault::PathNormalizer::normalizePath(it.filePath(), root);
-
-		librevault::NullInodeStorage null_inode_storage;
-		librevault::InodeScanner scanner(it.filePath(), secret, root, snapshot, &null_inode_storage);
-		librevault::Inode inode = scanner.createInode();
-		qDebug() << inode.chunks().size();
-	}
-
-	return 0;
-}
+} /* namespace librevault */

@@ -37,6 +37,14 @@ EncryptedData::EncryptedData(const serialization::EncryptedData& serialized) :
 	ct_(QByteArray::fromStdString(serialized.ct())),
 	iv_(QByteArray::fromStdString(serialized.iv())) {}
 
+EncryptedData::EncryptedData(Secret secret, QByteArray pt, QByteArray iv) {
+	setPlainText(secret, pt, iv);
+}
+
+EncryptedData::EncryptedData(QByteArray ct, QByteArray iv) {
+	setCipherText(ct, iv);
+}
+
 EncryptedData::operator serialization::EncryptedData() const {
 	serialization::EncryptedData pb;
 	pb.set_ct(ct_.toStdString());
@@ -46,10 +54,7 @@ EncryptedData::operator serialization::EncryptedData() const {
 
 void EncryptedData::setPlainText(Secret secret, QByteArray pt, QByteArray iv) {
 	Q_ASSERT(secret.canEncryptData());
-	if(iv.isEmpty()) {
-		iv.resize(16);
-		CryptoPP::AutoSeededRandomPool().GenerateBlock((uchar*)iv.data(), 16);
-	}
+	Q_ASSERT(iv.size() == 16);
 
 	iv_ = iv;
 	ct_ = encryptAesCbc(pt, secret.getEncryptionKey(), iv_);
@@ -58,6 +63,12 @@ void EncryptedData::setPlainText(Secret secret, QByteArray pt, QByteArray iv) {
 QByteArray EncryptedData::getPlainText(Secret secret) const {
 	Q_ASSERT(secret.canEncryptData());
 	return decryptAesCbc(ct_, secret.getEncryptionKey(), iv_);
+}
+
+QByteArray EncryptedData::getRandomIV() {
+	QByteArray iv(16, 0);
+	CryptoPP::AutoSeededRandomPool().GenerateBlock((uchar*)iv.data(), 16);
+	return iv;
 }
 
 } /* namespace librevault */

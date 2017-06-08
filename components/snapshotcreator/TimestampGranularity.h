@@ -1,4 +1,4 @@
-/* Copyright (C) 2015 Alexander Shishenko <alex@shishenko.com>
+/* Copyright (C) 2017 Alexander Shishenko <alex@shishenko.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,37 +26,25 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  */
-#include "InodeScanner.h"
-#include "Snapshot.h"
-#include "IInodeStorage.h"
-#include <PathNormalizer.h>
-#include <Secret.h>
-#include <QDir>
-#include <QDirIterator>
-#include <QDebug>
+#pragma once
+#include <QStorageInfo>
+#include <chrono>
 
-void scanFile(QString abspath) {
-
-
-}
-
-int main() {
-	librevault::Secret secret;
-	qDebug() << secret;
-	QString root = "/home/gamepad/Experiment";
-
-	librevault::Snapshot snapshot;
-
-	QDirIterator it(root, QDir::AllEntries | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
-	while(it.hasNext()) {
-		it.next();
-		qDebug() << it.filePath() << librevault::PathNormalizer::normalizePath(it.filePath(), root);
-
-		librevault::NullInodeStorage null_inode_storage;
-		librevault::InodeScanner scanner(it.filePath(), secret, root, snapshot, &null_inode_storage);
-		librevault::Inode inode = scanner.createInode();
-		qDebug() << inode.chunks().size();
-	}
-
-	return 0;
+std::chrono::nanoseconds timestampGranularity(const QString& path) {
+	using namespace std::chrono_literals;
+	QString filesystem = QString::fromUtf8(QStorageInfo(path).fileSystemType());
+	// Windows
+	if(filesystem.contains("ntfs", Qt::CaseInsensitive)) return 100ns;
+	if(filesystem.contains("exfat", Qt::CaseInsensitive)) return 10ms;
+	if(filesystem.contains("fat", Qt::CaseInsensitive)) return 2s;
+	// Mac
+	if(filesystem.contains("hfs", Qt::CaseInsensitive)) return 1s;
+	// Linux
+	if(filesystem.contains("ext2", Qt::CaseInsensitive)) return 1s;
+	if(filesystem.contains("ext3", Qt::CaseInsensitive)) return 1s;
+	if(filesystem.contains("reiserfs", Qt::CaseInsensitive)) return 1s;
+	// Other
+	if(filesystem.contains("udf", Qt::CaseInsensitive)) return 1ms;
+	// ext4, btrfs, f2fs, xfs, zfs, reiser4, apfs are considered as supporting nanosecond resolution
+	return 1ns;
 }

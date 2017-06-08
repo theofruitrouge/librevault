@@ -4,6 +4,10 @@
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+
 #============================================================================
 # Sources & headers
 #============================================================================
@@ -27,10 +31,12 @@ target_link_libraries(snapshotcreator PRIVATE aes)
 target_link_libraries(snapshotcreator PRIVATE secret)
 target_link_libraries(snapshotcreator PRIVATE Qt5::Core)
 target_link_libraries(snapshotcreator PRIVATE cryptopp)
+target_link_libraries(snapshotcreator PRIVATE rabin)
 
 target_link_libraries(snapshotcreator PRIVATE pathnormalizer)
 
 target_link_libraries(snapshotcreator PUBLIC snapshot)
+target_link_libraries(snapshotcreator PUBLIC Boost::system)
 target_link_libraries(snapshotcreator PUBLIC Boost::filesystem)
 
 target_link_libraries(snapshotcreator_exe snapshotcreator)

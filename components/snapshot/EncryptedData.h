@@ -40,14 +40,18 @@ class EncryptedData {
 public:
 	EncryptedData() = default;
 	EncryptedData(const serialization::EncryptedData& serialized);
+	EncryptedData(Secret secret, QByteArray pt, QByteArray iv = getRandomIV()); // Construct with setting plaintext
+	EncryptedData(QByteArray ct, QByteArray iv); // Construct with setting plaintext
 	operator serialization::EncryptedData() const;
 
-	void setPlainText(Secret secret, QByteArray pt, QByteArray iv = QByteArray());
+	void setPlainText(Secret secret, QByteArray pt, QByteArray iv = getRandomIV());
 	QByteArray getPlainText(Secret secret) const;
 
 	void setCipherText(QByteArray ct, QByteArray iv) {ct_ = ct; iv_ = iv;};
 	QByteArray getCipherText() const {return ct_;};
 	QByteArray getIV() const {return iv_;};
+
+	static QByteArray getRandomIV();
 
 private:
 	QByteArray ct_, iv_;

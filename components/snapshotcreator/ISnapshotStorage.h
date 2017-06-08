@@ -1,4 +1,4 @@
-/* Copyright (C) 2015 Alexander Shishenko <alex@shishenko.com>
+/* Copyright (C) 2017 Alexander Shishenko <alex@shishenko.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,37 +26,24 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  */
-#include "InodeScanner.h"
-#include "Snapshot.h"
-#include "IInodeStorage.h"
-#include <PathNormalizer.h>
-#include <Secret.h>
-#include <QDir>
-#include <QDirIterator>
-#include <QDebug>
+#pragma once
+#include <QByteArray>
+#include <Snapshot.h>
 
-void scanFile(QString abspath) {
+namespace librevault {
 
+class ISnapshotStorage {
+public:
+	virtual bool hasSnapshot(QByteArray snapshot_hash) const = 0;
+	virtual Snapshot getSnapshot(QByteArray snapshot_hash) const = 0;
+	virtual Snapshot lastSnapshot() const = 0;
+};
 
-}
+class NullSnapshotStorage : public ISnapshotStorage {
+public:
+	bool hasSnapshot(QByteArray snapshot_hash) const override {return false;}
+	Snapshot getSnapshot(QByteArray snapshot_hash) const override {return Snapshot();}
+	Snapshot lastSnapshot() const override {return Snapshot();}
+};
 
-int main() {
-	librevault::Secret secret;
-	qDebug() << secret;
-	QString root = "/home/gamepad/Experiment";
-
-	librevault::Snapshot snapshot;
-
-	QDirIterator it(root, QDir::AllEntries | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
-	while(it.hasNext()) {
-		it.next();
-		qDebug() << it.filePath() << librevault::PathNormalizer::normalizePath(it.filePath(), root);
-
-		librevault::NullInodeStorage null_inode_storage;
-		librevault::InodeScanner scanner(it.filePath(), secret, root, snapshot, &null_inode_storage);
-		librevault::Inode inode = scanner.createInode();
-		qDebug() << inode.chunks().size();
-	}
-
-	return 0;
-}
+} /* namespace librevault */

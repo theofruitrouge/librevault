@@ -31,6 +31,16 @@
 
 namespace librevault {
 
+Snapshot::Snapshot() {
+	d = new SnapshotData;
+	d->polynomial = 0x3DA3358B4DC173LL;
+	d->polynomial_degree = 53;
+	d->polynomial_shift = 53 - 8;
+	d->avg_bits = 20;
+	d->max_chunksize = 8 * 1024 * 1024;
+	d->min_chunksize = 1 * 1024 * 1024;
+}
+
 Snapshot::Snapshot(const serialization::Snapshot& serialized) {
 	d = new SnapshotData;
 	d->revision = serialized.revision();

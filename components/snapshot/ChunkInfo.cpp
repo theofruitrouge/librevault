@@ -36,7 +36,7 @@ ChunkInfo::ChunkInfo(const serialization::Inode_ChunkInfo& serialized) {
 	d->ct_hash = QByteArray::fromStdString(serialized.ct_hash());
 	d->size = serialized.size();
 	d->iv = QByteArray::fromStdString(serialized.iv());
-	d->pt_hmac = QByteArray::fromStdString(serialized.pt_hmac());
+	d->pt_keyed_hash = QByteArray::fromStdString(serialized.pt_keyed_hash());
 }
 
 ChunkInfo::operator serialization::Inode_ChunkInfo() const {
@@ -44,7 +44,7 @@ ChunkInfo::operator serialization::Inode_ChunkInfo() const {
 	serialized.set_ct_hash(d->ct_hash.toStdString());
 	serialized.set_size(d->size);
 	serialized.set_iv(d->iv.toStdString());
-	serialized.set_pt_hmac(d->pt_hmac.toStdString());
+	serialized.set_pt_keyed_hash(d->pt_keyed_hash.toStdString());
 	return serialized;
 }
 

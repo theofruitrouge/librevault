@@ -27,14 +27,27 @@
  * files in the program, then also delete it here.
  */
 #pragma once
+#include <ChunkInfo.h>
 #include <QByteArray>
 
 namespace librevault {
 
 class IInodeStorage {
 public:
-	bool hasInode(QByteArray inode_hash) const;
-	QByteArray getInode(QByteArray inode_hash) const;
+	virtual bool hasInode(QByteArray inode_hash) const = 0;
+	virtual QByteArray getInode(QByteArray inode_hash) const = 0;
+
+	virtual ChunkInfo getChunkInfoByPtKeyedHash(QByteArray pt_keyed_hash) const = 0;
+	virtual bool haveChunkInfoByPtKeyedHash(QByteArray pt_keyed_hash) const = 0;
+};
+
+class NullInodeStorage : public IInodeStorage {
+public:
+	bool hasInode(QByteArray inode_hash) const override {return false;}
+	QByteArray getInode(QByteArray inode_hash) const override {return QByteArray();}
+
+	ChunkInfo getChunkInfoByPtKeyedHash(QByteArray pt_keyed_hash) const override {return ChunkInfo();}
+	bool haveChunkInfoByPtKeyedHash(QByteArray pt_keyed_hash) const override {return false;}
 };
 
 } /* namespace librevault */

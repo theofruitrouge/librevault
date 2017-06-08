@@ -52,7 +52,7 @@ class Snapshot {
 	};
 
 public:
-	Snapshot() {d = new SnapshotData;}
+	Snapshot();
 	Snapshot(const serialization::Snapshot& serialized);
 	operator serialization::Snapshot() const;
 

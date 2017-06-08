@@ -31,6 +31,7 @@
 #include "ChunkInfo.h"
 #include <Secret.h>
 #include <QByteArray>
+#include <QDebug>
 #include <QList>
 #include <chrono>
 
@@ -56,7 +57,7 @@ private:
 		Timestamp timestamp;
 		InodeType inode_type;
 		Timestamp mtime;
-		quint32 mtime_granularity;
+		quint64 mtime_granularity;
 		quint32 windows_attrib;
 		quint32 mode;
 		quint32 uid;
@@ -82,8 +83,8 @@ public:
 	Timestamp mtime() const {return d->mtime;}
 	void setMtime(Timestamp mtime) {d->mtime = mtime;}
 
-	quint32 mtimeGranularity() const {return d->mtime_granularity;}
-	void setMtimeGranularity(quint32 mtime_granularity) {d->mtime_granularity = mtime_granularity;}
+	quint64 mtimeGranularity() const {return d->mtime_granularity;}
+	void setMtimeGranularity(quint64 mtime_granularity) {d->mtime_granularity = mtime_granularity;}
 
 	quint32 windowsAttrib() const {return d->windows_attrib;}
 	void setWindowsAttrib(quint32 windows_attrib) {d->windows_attrib = windows_attrib;}

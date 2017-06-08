@@ -1,4 +1,4 @@
-/* Copyright (C) 2015 Alexander Shishenko <alex@shishenko.com>
+/* Copyright (C) 2017 Alexander Shishenko <alex@shishenko.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,37 +26,58 @@
  * version.  If you delete this exception statement from all source
  * files in the program, then also delete it here.
  */
-#include "InodeScanner.h"
-#include "Snapshot.h"
+#pragma once
+#include "EncryptedData.h"
+#include "IChunkStorage.h"
 #include "IInodeStorage.h"
-#include <PathNormalizer.h>
+#include "ISnapshotStorage.h"
+#include <Inode.h>
+#include <Snapshot.h>
 #include <Secret.h>
-#include <QDir>
-#include <QDirIterator>
-#include <QDebug>
+#include <QList>
+#include <QHash>
+#include <QRunnable>
+#include <QObject>
 
-void scanFile(QString abspath) {
+namespace librevault {
 
+class InodeScanner : public QObject, public QRunnable {
+	Q_OBJECT
+signals:
+	void inodeCreated(Inode inode);
+	void inodeFailed(QString error_string);
 
-}
+public:
+	struct abort_index : public std::runtime_error {
+		abort_index(QString what) : std::runtime_error(what.toStdString()) {}
+	};
 
-int main() {
-	librevault::Secret secret;
-	qDebug() << secret;
-	QString root = "/home/gamepad/Experiment";
+	InodeScanner(QString path, Secret secret, QString root, Snapshot snapshot, IInodeStorage* inode_storage, QObject* parent = nullptr);
 
-	librevault::Snapshot snapshot;
+	Inode createInode();    // Synchronously scan the inode
 
-	QDirIterator it(root, QDir::AllEntries | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
-	while(it.hasNext()) {
-		it.next();
-		qDebug() << it.filePath() << librevault::PathNormalizer::normalizePath(it.filePath(), root);
+	QString path() const {return path_;}
 
-		librevault::NullInodeStorage null_inode_storage;
-		librevault::InodeScanner scanner(it.filePath(), secret, root, snapshot, &null_inode_storage);
-		librevault::Inode inode = scanner.createInode();
-		qDebug() << inode.chunks().size();
-	}
+public slots:
+	void run() override;    // Asynchronously scan the inode
+	void stop() {stopping_ = true;} // Interrupt the scan (synchronous or asynchronous)
 
-	return 0;
-}
+private:
+	QString path_;
+	Secret secret_;
+	QString root_;
+	Snapshot snapshot_; // Used for snapshot parameters
+	IInodeStorage* inode_storage_;
+
+	std::atomic<bool> stopping_;
+
+	Inode::InodeType getType() const;
+	void updateAttributes(Inode& inode) const;
+	QList<ChunkInfo> getChunks() const;
+
+	ChunkInfo populateChunk(const QByteArray& data, const QHash<QByteArray, ChunkInfo>& pt_keyed_hashes) const;
+
+	void interruptionPoint() const;
+};
+
+} /* namespace librevault */

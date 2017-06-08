@@ -48,7 +48,7 @@ message Inode {
 	InodeType type = 3;
 
 	google.protobuf.Timestamp mtime = 4;
-    uint32 mtime_granularity = 5;    // (0 treated as 1). Should be 0 in "private mode", as it leaks the OS.
+    uint64 mtime_granularity = 5;    // (0 treated as 1). Should be 0 in "private mode", as it leaks the OS.
 
 	// Windows-specific
 	uint32 windows_attrib = 6;
@@ -63,7 +63,7 @@ message Inode {
 		uint32 size = 2;
 		bytes iv = 3;
 
-		bytes pt_hmac = 4;
+		bytes pt_keyed_hash = 4;    // SHA-3 can be used directly by prepending key before the plaintext, others need to use HMAC
 	}
 	repeated ChunkInfo chunks = 255;
 

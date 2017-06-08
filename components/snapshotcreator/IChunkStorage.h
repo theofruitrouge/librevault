@@ -33,8 +33,14 @@ namespace librevault {
 
 class IChunkStorage {
 public:
-	bool hasChunk(QByteArray path_hmac) const;
-	QByteArray getChunk(QByteArray path_hmac) const;
+	virtual bool hasChunk(QByteArray path_hmac) const = 0;
+	virtual QByteArray getChunk(QByteArray path_hmac) const = 0;
+};
+
+class NullChunkStorage : public IChunkStorage {
+public:
+	bool hasChunk(QByteArray path_hmac) const override {return false;}
+	QByteArray getChunk(QByteArray path_hmac) const override {return QByteArray();}
 };
 
 } /* namespace librevault */

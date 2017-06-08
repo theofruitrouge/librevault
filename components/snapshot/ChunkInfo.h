@@ -45,7 +45,7 @@ class ChunkInfo {
 		quint32 size;
 		QByteArray iv;
 
-		QByteArray pt_hmac;
+		QByteArray pt_keyed_hash;
 	};
 
 public:
@@ -62,8 +62,8 @@ public:
 	QByteArray iv() const {return d->iv;}
 	void setIv(QByteArray iv) {d->iv = iv;}
 
-	QByteArray ptHmac() const {return d->pt_hmac;}
-	void setPtHmac(QByteArray pt_hmac) {d->pt_hmac = pt_hmac;}
+	QByteArray ptKeyedHash() const {return d->pt_keyed_hash;}
+	void setPtKeyedHash(QByteArray pt_keyed_hash) {d->pt_keyed_hash = pt_keyed_hash;}
 
 private:
 	QSharedDataPointer<ChunkInfoData> d;
